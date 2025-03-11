@@ -1,5 +1,3 @@
-# This file will be to specify the search form fields
-
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
@@ -50,25 +48,27 @@ class SignupForm(UserCreationForm):
     model = User
     fields = ['username', 'password1', 'password2', 'email', 'first_name']
 
+# Chart type choices for search form
 CHART_CHOICES = (
   ('', 'Select Chart Type...'),
-  ('#1', 'Bar Chart'), # When user selects "Bar Chart", it is stored as "#1"
+  ('#1', 'Bar Chart'), # User selects "Bar Chart", stored as "#1"
   ('#2', 'Pie Chart'),
   ('#3', 'Line Chart')
 )
 
-# Specify difficulty level choices as a tuple
+# Difficulty level choices for search form
 DIFFICULTY_CHOICES = (
   ('', 'Select Difficulty...'),
-  ('Easy', 'Easy'), # When user selects "Easy", it is stored as "Easy"
+  ('Easy', 'Easy'), # User selects "Easy", stored as "Easy"
   ('Medium', 'Medium'),
   ('Intermediate', 'Intermediate'),
   ('Hard', 'Hard')
 )
 
-# Define class-based Form imported from Django forms
 class RecipeSearchForm(forms.Form):
-  # Allows users to search by recipe name
+  """
+  Form for searching recipes based on name, ingredients, difficulty, and chart type.
+  """
   recipe_name = forms.CharField(
     max_length=120,
     required=False,
@@ -78,7 +78,7 @@ class RecipeSearchForm(forms.Form):
       'placeholder': 'Enter a recipe name...'
     })
   )
-  # Allows users to search by ingredient
+  
   ingredient = forms.CharField(
     max_length=120,
     required=False,
@@ -88,7 +88,7 @@ class RecipeSearchForm(forms.Form):
       'placeholder': 'Enter an ingredient...'
     })
   )
-  # Dropdown menu to filter recipes by difficulty level
+  
   difficulty = forms.ChoiceField(
     choices=DIFFICULTY_CHOICES,
     required=False,
@@ -97,7 +97,7 @@ class RecipeSearchForm(forms.Form):
       'class': 'form-select'
     })
   )
-  # Dropdown menu to select chart type for data visualization
+  
   chart_type = forms.ChoiceField(
     choices=CHART_CHOICES,
     required=False,
@@ -106,3 +106,33 @@ class RecipeSearchForm(forms.Form):
       'class': 'form-select'
     })
   )
+
+class CreateRecipeForm(forms.ModelForm):
+  """
+  Form for creating and editing recipes.
+  Linked to the Recipe model.
+  Use forms.ModelForm when form is directly linked to a database model.
+  """
+  pic = forms.ImageField(required=False)
+  
+  class Meta:
+    """
+    Defines metadata for CreateRecipeForm.
+    Specifies the model and fields to include in the form.
+    Connects form to Recipe model.
+    """
+    model = Recipe
+    fields = ['name', 'cooking_time', 'ingredients', 'description', 'pic']
+  
+  def __init__(self, *args, **kwargs):
+    """
+    Customizes form initialization.
+    - Applies Bootstrap 'form-control' class to all fields.
+    - Sets default row size for 'ingredients' and 'description' fields.
+    """
+    super(CreateRecipeForm, self).__init__(*args, **kwargs)
+    for field_name, field in self.fields.items():
+      field.widget.attrs.update({'class': 'form-control'})
+    
+    self.fields['ingredients'].widget.attrs.update({'rows': 3})
+    self.fields['description'].widget.attrs.update({'rows': 3})
