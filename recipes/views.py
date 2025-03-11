@@ -219,6 +219,30 @@ def edit_recipe_view(request, pk):
     },
   )
 
+@login_required
+def delete_recipe_view(request, pk):
+  """ Handles recipe deletion, ensuring proper redirection and session message. """
+  
+  # Retrieve recipe object or return a 404 if not found
+  recipe = get_object_or_404(Recipe, pk=pk)
+  
+  if request.method == 'POST':
+    # Store name before deletion
+    recipe_name = recipe.name
+    # Delete recipe from database
+    recipe.delete()
+
+    # Store success message in session to persist across redirection
+    request.session['deleted_recipe_message'] = f'Recipe "{recipe_name}" was successfully deleted.'
+
+    # Handle AJAX request (if deletion was triggered via AJAX)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+      return JsonResponse({'redicrect_url': reverse('recipes:recipe_list')})
+    
+    return redirect('recipes:recipe_list')
+  
+  return redirect('recipes:recipe_list')
+
 def login_view(request):
   """ Handles user authentication using Django's built-in AuthenticationForm. """
 
