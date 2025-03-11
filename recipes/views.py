@@ -376,3 +376,18 @@ def profile_view(request):
 
   return render(request, 'recipes/profile.html', context)
 
+@login_required
+def delete_account_view(request):
+  """ Handles user account deletion and logs out the user. """
+
+  if request.method == 'POST':
+    # Retrieve the currently logged-in user
+    user = request.user
+    # Display success message before deleting account
+    messages.success(request, 'Your account has been deleted successfully.')
+    # Permanently delete user account
+    user.delete()
+    # Log out user after deletion
+    logout(request)
+    # Redirect user to home page
+    return redirect('recipes:home')
