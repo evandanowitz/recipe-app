@@ -163,6 +163,46 @@ def create_recipe_view(request):
 
   return render(request, 'recipes/create_recipe.html', context)
 
+@login_required
+def edit_recipe_view(request, pk):
+  """ Allow users to edit an existing recipe. """
+
+  # Retrieve recipe by primary key
+  recipe = Recipe.objects.filter(pk=pk).first()
+
+  if recipe is None:
+    messages.error(request, 'The recipe no longer exists. Redirecting to recipes list.')
+    return HttpResponseRedirect(reverse('recipes:recipe_list'))
+
+  if request.method == 'POST':
+    form = CreateRecipeForm(request.POST, request.FILES, instance=recipe)
+
+    if form.is_valid():
+      form.save()
+      success_message = f'"{recipe.name}" has been successfully updated!'
+      
+      # Reload form after updating recipe, displaying success message
+      return render(
+        request, 
+        'recipes/edit_recipe.html', 
+        {'success_message': success_message, 'recipe': recipe}
+      )
+    
+    else:
+      error_message = form.errors.as_ul()
+
+  else:
+    # Pre-populate form with existing recipe data
+    form = CreateRecipeForm(instance=recipe)
+
+  return render(
+    request, 
+    'recipes/edit_recipe.html', {
+      'form': form, 
+      'recipe': recipe,
+    },
+  )
+
 def login_view(request):
   """ Handles user authentication using Django's built-in AuthenticationForm. """
 
