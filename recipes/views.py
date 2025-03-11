@@ -88,6 +88,22 @@ def login_view(request):
 
   return render(request, 'recipes/auth/login.html', context)
 
+def logout_view(request):
+  """ Logs out the user and redirects to the logout success page. """
+  
+  # Logs out current user with pre-defined Django function
+  logout(request)
+  
+  return redirect('recipes:logout_success')
+
+def logout_success(request):
+  """ Displays the logout success page with the timestamp of logout. """
+  
+  # Format logout time
+  logout_time = localtime(now()).strftime('%m/%d/%Y @ %I:%M %p')
+
+  return render(request, 'recipes/auth/logout_success.html', {'logout_time': logout_time})
+
 def signup_view(request):
   """ Handles user signup, form validation, and automatic login after successful signup. """
 
