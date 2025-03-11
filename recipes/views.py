@@ -23,40 +23,84 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):       # class-based "pro
 def home(request):
   return render(request, 'recipes/recipes_home.html')
 
-@login_required # protected
+@login_required
 def recipe_list(request):
-  form = RecipeSearchForm(request.GET or None) # Create an instance of RecipeSearchForm that was defined in recipes/forms.py. Allow GET requests for filtering
-  qs_recipes = Recipe.objects.all() # Retrieve all recipes from the database (a QuerySet)
-  recipes_df = None # Initialize pandas DataFrame as None
-  chart = None # Initialize chart variable as None
-  chart_error_msg = None # Initialize an error message variable
+  """ Display the list of recipes, apply search filters, and generate charts. """
+  
+  form = RecipeSearchForm(request.GET or None)
+  
+  # Retrieve and remove any stored message about a deleted recipe
+  deleted_recipe_message = request.session.pop('deleted_recipe_message', None)
 
-  # Get search input from the form
-  recipe_name = request.GET.get('recipe_name', '').strip() # Get recipe name input from the search form
-  ingredient = request.GET.get('ingredient', '').strip() # Get ingredient input from the search form
-  difficulty = request.GET.get('difficulty', '') # Get difficulty level selection from the search form
-  chart_type = request.GET.get('chart_type', '') # Get chart type selection from the search form
+  # Determine which recipes to show: Superusers see all; regular users see only their own
+  if request.user.is_superuser:
+    qs_recipes = Recipe.objects.filter(Q(user=request.user) | Q(user__isnull=True))
+  else:
+    qs_recipes = Recipe.objects.filter(user=request.user)
 
-  # Apply filters based on user input (only if any filter is present)
+  # If a non-superuser has no recipes, clone public recipes for them
+  if not qs_recipes.exists() and not request.user.is_superuser:
+    public_recipes = Recipe.objects.filter(user__isnull=True)
+    
+    for recipe in public_recipes:
+      Recipe.objects.create(
+        user=request.user,
+        name=recipe.name,
+        cooking_time=recipe.cooking_time,
+        ingredients=recipe.ingredients,
+        difficulty=recipe.difficulty,
+        description=recipe.description,
+        pic=recipe.pic,
+      )
+
+    # Fetch updated list of user-specific recipes
+    qs_recipes = Recipe.objects.filter(user=request.user)
+
+  # Get user's display name (use full name if available, otherwise username)
+  display_name = request.user.get_full_name() if request.user.get_full_name() else request.user.username
+
+  recipes_df = None
+  chart = None
+  chart_error_msg = None
+
+  # Retrieve user search inputs
+  recipe_name = request.GET.get('recipe_name', '').strip()
+  ingredient = request.GET.get('ingredient', '').strip()
+  difficulty = request.GET.get('difficulty', '')
+  chart_type = request.GET.get('chart_type', '')
+
+  # Apply filters if any search criteria are provided
   if recipe_name or ingredient or difficulty:
     if recipe_name:
-      qs_recipes = qs_recipes.filter(name__icontains=recipe_name) # Partial match
+      qs_recipes = qs_recipes.filter(name__icontains=recipe_name)
     if ingredient:
-      qs_recipes = qs_recipes.filter(ingredients__icontains=ingredient) # Partial match
+      qs_recipes = qs_recipes.filter(ingredients__icontains=ingredient)
     if difficulty:
-      qs_recipes = qs_recipes.filter(difficulty=difficulty) # Exact match
+      qs_recipes = qs_recipes.filter(difficulty=difficulty)
 
-  if qs_recipes.exists(): # Convert the QuerySet to a Pandas DataFrame (if there are matching recipes/results)
-    recipes_df = pd.DataFrame(qs_recipes.values()) # Convert QuerySet to DataFrame
-    recipes_df = recipes_df.to_html() # Convert DataFrame to HTML table
+  no_results_message = 'No recipes match your search criteria.' if not qs_recipes.exists() else None
 
-    if chart_type: # Generate chart if a chart type is selected
+  # Convert QuerySet to DataFrame and convert DataFrame to HTML table (if results exist)
+  if qs_recipes.exists():
+    recipes_df = pd.DataFrame(qs_recipes.values())
+    recipes_df = recipes_df.to_html()
+
+    if chart_type:
       chart = get_chart(chart_type, pd.DataFrame(qs_recipes.values()))
-      if chart is None: # Check if get_chart() returned None
+      if chart is None:
         chart_error_msg = 'Invalid chart type selected. Please choose a valid chart.'
 
-  # Pass recipes, form, and chart to the template (recipes_list.html file)
   return render(request, 'recipes/recipes_list.html', {
+    'object_list': qs_recipes, # 'object_list' is default naming and is really just 'qs_recipes'
+    'form': form,
+    'recipes_df': recipes_df,
+    'chart': chart,
+    'chart_error_msg': chart_error_msg,
+    'deleted_recipe_message': deleted_recipe_message,
+    'no_results_message': no_results_message,
+    'display_name': display_name
+  })
+
 def login_view(request):
   """ Handles user authentication using Django's built-in AuthenticationForm. """
 
