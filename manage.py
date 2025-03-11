@@ -6,9 +6,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    # Add the project root to the Python path
-    project_root = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(project_root)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(current_dir))
+    sys.path.insert(0, project_root)
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'recipe_project.settings')
     try:
