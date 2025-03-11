@@ -21,6 +21,7 @@ class RecipeDetailView(LoginRequiredMixin, DetailView):       # class-based "pro
 # This function takes the request coming from the web application and, 
 # returns the template available at recipes/home.html as a response
 def home(request):
+  """ Render homepage for all users (publicly accessible). Displays landing page with an intro to BiteBase. """
   return render(request, 'recipes/recipes_home.html')
 
 @login_required
