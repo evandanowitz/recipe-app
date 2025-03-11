@@ -160,3 +160,33 @@ def about_me_view(request):
   
   return render(request, 'recipes/about_me.html')
 
+@login_required
+def profile_view(request):
+  """ Renders the user profile page with relevant account details and a button for account deletion. """
+  
+  # Retrieve user's name
+  display_name = request.user.get_full_name()
+
+  # If name is empty or blank, default to username
+  if not display_name.strip():
+    display_name = request.user.username
+  
+  # Retrieve name or set default message if not provided
+  name = request.user.get_full_name()
+  if not name.strip():
+    name = 'Name not created at signup'
+
+  # Retrieve email or set default message if not provided
+  email = request.user.email
+  if not email:
+    email = 'Email not created at signup'
+
+  context = {
+    'username': request.user.username,
+    'display_name': display_name,
+    'name': name,
+    'email': email
+  }
+
+  return render(request, 'recipes/profile.html', context)
+
