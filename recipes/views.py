@@ -14,12 +14,26 @@ class RecipeListView(LoginRequiredMixin, ListView):           # class-based "pro
   model = Recipe                                              # specify model
   template_name = 'recipes/recipes_home.html'                 # specify template
 
-class RecipeDetailView(LoginRequiredMixin, DetailView):       # class-based "protected" view
-  model = Recipe                                              # specify model
-  template_name = 'recipes/recipe_details.html'               # specify template
+class RecipeDetailView(LoginRequiredMixin, DetailView):
+  """ Protected DetailView that displays a single recipe's details for logged-in users. """
+  model = Recipe
+  template_name = 'recipes/recipe_details.html'
 
-# This function takes the request coming from the web application and, 
-# returns the template available at recipes/home.html as a response
+  def get_object(self, queryset=None):
+    """ Override get_object() to handle cases where a recipe no longer exists. Displays an error message and returns None if the recipe is deleted. """
+    try:
+      return super().get_object(queryset)
+    except Recipe.DoesNotExist:
+      messages.error(self.request, 'The recipe no longer exists. Redirecting...')
+      return None
+    
+  def get(self, request, *args, **kwargs):
+    """ Override get() to check if the recipe exists before rendering. If the recipe is missing, redirect to the recipes list page. """
+    obj = self.get_object()
+    if obj is None:
+      return HttpResponseRedirect(reverse('recipes:recipe_list'))
+    return super().get(request, *args, **kwargs)
+
 def home(request):
   """ Render homepage for all users (publicly accessible). Displays landing page with an intro to BiteBase. """
   return render(request, 'recipes/recipes_home.html')
