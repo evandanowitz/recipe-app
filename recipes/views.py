@@ -57,9 +57,34 @@ def recipe_list(request):
 
   # Pass recipes, form, and chart to the template (recipes_list.html file)
   return render(request, 'recipes/recipes_list.html', {
-    'object_list': qs_recipes,            # Pass the filtered recipes 
-    'form': form,                         # Pass the search form
-    'recipes_df': recipes_df,             # Pass the DataFrame for table display
-    'chart': chart,                       # Pass the generated chart
-    'chart_error_msg': chart_error_msg    # Pass the chart error message 
-  })
+def login_view(request):
+  """ Handles user authentication using Django's built-in AuthenticationForm. """
+
+  error_message = None
+  form = AuthenticationForm()
+
+  # Process form submission when the user clicks "Login" button
+  if request.method == 'POST':
+    # Populate form with submitted data
+    form = AuthenticationForm(data = request.POST)
+
+    if form.is_valid():
+      username = form.cleaned_data.get('username')
+      password = form.cleaned_data.get('password')
+      # Use Django 'authenticate' function to authenticate user
+      user = authenticate(username = username, password = password)
+      
+      if user is not None:
+        # if user is authenticated, use pre-defined Django function to log in
+        login(request, user)
+        return redirect('recipes:recipe_list')
+      else:
+        error_message = 'Oops... something went wrong!'
+
+  context = {
+    'form': form,
+    'error_message': error_message,
+  }
+
+  return render(request, 'recipes/auth/login.html', context)
+
