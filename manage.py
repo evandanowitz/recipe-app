@@ -6,10 +6,6 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_dir))
-    sys.path.insert(0, project_root)
-
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'recipe_project.settings')
     try:
         from django.core.management import execute_from_command_line
