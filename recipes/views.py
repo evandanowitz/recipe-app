@@ -1,14 +1,30 @@
-from django.shortcuts import render                           # imported by default
-from .models import Recipe                                    # to access the Recipe model
-from django.views.generic import ListView, DetailView         # to display lists and details
-from django.contrib.auth.mixins import LoginRequiredMixin     # to protect class-based view
-from django.contrib.auth.decorators import login_required     # to protect function-based view
-from django.contrib import messages                           # import Django messages framework
-from .forms import RecipeSearchForm                           # import RecipeSearchForm class
-import pandas as pd                                           # import pandas. refer to it as 'pd'
-from .utils import get_chart                                  # to call the get_chart() function
+# Django Shortcuts (Common Utility Functions)
+from django.shortcuts import render, redirect, get_object_or_404
 
-# Create your views here.
+# Django Class-Based Views (CBVs)
+from django.views.generic import ListView, DetailView
+
+# Authentication & Authorization
+from django.contrib.auth.mixins import LoginRequiredMixin     # Protect CBVs
+from django.contrib.auth.decorators import login_required     # Protect FBVs
+from django.contrib.auth import authenticate, login, logout   # Django authentication libraries
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+
+# Forms & Models
+from .models import Recipe
+from .forms import RecipeSearchForm, SignupForm, CreateRecipeForm
+
+# Utilities & Additional Libraries
+import pandas as pd
+from .utils import get_chart
+
+# Django Utlities
+from django.utils.timezone import now, localtime
+from django.urls import reverse
+from django.db.models import Q
+from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.contrib import messages     # Django Messages Framework
 
 class RecipeListView(LoginRequiredMixin, ListView):           # class-based "protected" view
   model = Recipe                                              # specify model
