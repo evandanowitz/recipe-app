@@ -116,6 +116,53 @@ def recipe_list(request):
     'display_name': display_name
   })
 
+@login_required
+def create_recipe_view(request):
+  """ Allow users to create a new recipe. Superusers can create public recipes. """
+
+  error_message = None
+  success_message = None
+  recipe = None
+
+  if request.method == 'POST':
+    # Include FILES for image uploads
+    form = CreateRecipeForm(request.POST, request.FILES)
+    
+    if form.is_valid():
+      # Save the new recipe but do not commit yet
+      recipe = form.save(commit=False)
+      
+      # If superuser creates a recipe, set it as public (user=None)
+      if request.user.is_superuser:
+        # Public recipe (accessible for all users)
+        recipe.user = None
+      else:
+        # Private recipe (owned by the specific user)
+        recipe.user = request.user
+
+      # Save finalized recipe
+      recipe.save()
+      success_message = f'"{recipe.name}" created successfully!'
+      # Reset form after successful submission
+      form = CreateRecipeForm()
+
+    else:
+      # Capture and display form validation errors
+      error_message = form.errors.as_ul()
+
+  else:
+    # Display empty form for GET requests
+    form = CreateRecipeForm()
+
+  context = {
+    'form': form,
+    'recipe': recipe,
+    'error_message': error_message,
+    'success_message': success_message,
+  }
+
+  return render(request, 'recipes/create_recipe.html', context)
+
 def login_view(request):
   """ Handles user authentication using Django's built-in AuthenticationForm. """
 
