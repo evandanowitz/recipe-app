@@ -155,3 +155,8 @@ def signup_view(request):
 
   return render(request, 'recipes/auth/signup.html', context)
 
+def about_me_view(request):
+  """ Renders the About Me page. """
+  
+  return render(request, 'recipes/about_me.html')
+
