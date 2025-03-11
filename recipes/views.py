@@ -88,3 +88,54 @@ def login_view(request):
 
   return render(request, 'recipes/auth/login.html', context)
 
+def signup_view(request):
+  """ Handles user signup, form validation, and automatic login after successful signup. """
+
+  error_message = None
+  success_message = None
+  form = SignupForm()
+
+  # Check if request is a form submission (POST request)
+  if request.method == 'POST':
+    
+    # Populate form with submitted user data
+    form = SignupForm(request.POST)
+    
+    if form.is_valid():
+      # Save the new user to the database
+      user = form.save()
+      # Automatically log in the user after signup
+      login(request, user)
+      success_message = 'User has been successfully created!'
+
+      # Clone public recipes from the superuser to the newly created user
+      superuser = User.objects.get(username='evandanowitz') # Retrieve the superuser account
+      public_recipes = Recipe.objects.filter(user=superuser) # Get all public recipes
+      
+      for recipe in public_recipes:
+        # Create a copy of each public recipe for the new user
+        Recipe.objects.create(
+          user=user,
+          name=recipe.name,
+          cooking_time=recipe.cooking_time,
+          ingredients=recipe.ingredients,
+          difficulty=recipe.difficulty,
+          description=recipe.description,
+          pic=recipe.pic,
+        )
+
+      # Reset form after successful signup
+      form = SignupForm()
+
+    else:
+      # Display detailed error messages for invalid form submission
+      error_message = form.errors.as_ul()
+
+  context = {
+    'form': form,
+    'error_message': error_message,
+    'success_message': success_message,
+  }
+
+  return render(request, 'recipes/auth/signup.html', context)
+
