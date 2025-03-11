@@ -26,9 +26,10 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.contrib import messages     # Django Messages Framework
 
-class RecipeListView(LoginRequiredMixin, ListView):           # class-based "protected" view
-  model = Recipe                                              # specify model
-  template_name = 'recipes/recipes_home.html'                 # specify template
+class RecipeListView(LoginRequiredMixin, ListView):
+  """ Protected ListView that displays all recipes for logged-in users. """
+  model = Recipe
+  template_name = 'recipes/recipes_home.html'
 
 class RecipeDetailView(LoginRequiredMixin, DetailView):
   """ Protected DetailView that displays a single recipe's details for logged-in users. """
