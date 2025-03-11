@@ -1,8 +1,55 @@
 # This file will be to specify the search form fields
 
 from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
+from .models import Recipe
+from django.utils.safestring import mark_safe
 
-# Specify chart type choices as a tuple
+class SignupForm(UserCreationForm):
+  """
+  Custom signup form extending Django's built-in UserCreationForm.
+  Adds optional fields for email and first name.
+  """
+
+  username = forms.CharField(
+    max_length=50,
+    help_text="50 characters or fewer. Letters, digits, and @/./+/- only."
+  )
+
+  password1 = forms.CharField(
+    widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    label="Password",
+    help_text=mark_safe(
+      "Your password must contain at least 8 characters.<br>"
+      "Your password must be alphanumeric."
+    )
+  )
+
+  password2 = forms.CharField(
+    widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    label="Confirm password",
+    help_text="Enter the same password again for verification."
+  )
+
+  email = forms.CharField(
+    required=False,
+    help_text="Optional. Provide your email address if you'd like."
+  )
+
+  first_name = forms.CharField(
+    required=False,
+    help_text="Optional. Provide your first name if you'd like."
+  )
+
+  class Meta:
+    """
+    Defines metadata for the SignupForm.
+    Specifies the model and fields to include in the form.
+    """
+    model = User
+    fields = ['username', 'password1', 'password2', 'email', 'first_name']
+
 CHART_CHOICES = (
   ('', 'Select Chart Type...'),
   ('#1', 'Bar Chart'), # When user selects "Bar Chart", it is stored as "#1"
