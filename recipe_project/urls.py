@@ -1,3 +1,5 @@
+# This file should only manage the global routing. Each app (recipes) manages its own URLs.
+
 """
 URL configuration for recipe_project project.
 
@@ -16,18 +18,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings # allows you to access the MEDIA_URL and MEDIA_ROOT variables that you need to add.
-from django.conf.urls.static import static # provides access to the Django helper function static( ), which allows you to create URLs from local folder names.
-from .views import login_view, logout_view, logout_success
 
 urlpatterns = [
+  # Ensures the Django Admin Panel is accessible
   path('admin/', admin.site.urls),
+  # Tells Django to delegate all other URLs to 'recipes/urls.py'
   path('', include('recipes.urls')),
-  path('login/', login_view, name='login'), # good practice to give names to your url and view mapping
-  path('logout/', logout_view, name='logout'),
-  path('logout-success/', logout_success, name='logout_success'),
 ]
-
-# extends urlpatterns parameter to include the media info.
-# have now specifies the URL "/media/" that will trigger this media view.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
