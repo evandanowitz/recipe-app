@@ -173,3 +173,11 @@ cython_debug/
 .DS_Store
 
 media/*
+
+# Text backup files
+*.bak
+
+# Database
+*.sqlite3
+
+recipe_project/settings.py
