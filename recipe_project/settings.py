@@ -26,7 +26,13 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'stormy-bastion-86574.herokuapp.com']
+ALLOWED_HOSTS = [
+  '127.0.0.1', 
+  'localhost', 
+  'stormy-bastion-86574.herokuapp.com',
+  'stormy-bastion-86574-32ed47450529.herokuapp.com',
+  '.herokuapp.com'  # Allows any Heroku subdomain
+]
 
 
 # Application definition
